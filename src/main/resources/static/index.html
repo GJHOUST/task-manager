@@ -1,10 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="cs">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+  <meta charset="UTF-8" />
+  <title>Task Manager</title>
 </head>
 <body>
-$END$
+<h1>📝 Task Manager</h1>
+
+<form id="taskForm">
+  <input type="text" id="title" placeholder="Název" required />
+  <input type="text" id="description" placeholder="Popis" required />
+  <button type="submit">Přidat</button>
+</form>
+
+<ul id="taskList"></ul>
+
+<script>
+  const API = "/api/tasks";
+
+  async function fetchTasks() {
+    const res = await fetch(API);
+    const data = await res.json();
+    const list = document.getElementById("taskList");
+    list.innerHTML = "";
+    data.forEach((task) => {
+      const li = document.createElement("li");
+      li.textContent = `${task.title}: ${task.description} (${task.completed ? "✅" : "❌"})`;
+      const del = document.createElement("button");
+      del.textContent = "Smazat";
+      del.onclick = () => deleteTask(task.id);
+      li.appendChild(del);
+      list.appendChild(li);
+    });
+  }
+
+  async function deleteTask(id) {
+    await fetch(`${API}/${id}`, { method: "DELETE" });
+    fetchTasks();
+  }
+
+  document.getElementById("taskForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const title = document.getElementById("title").value;
+    const description = document.getElementById("description").value;
+
+    await fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title, description, completed: false }),
+    });
+
+    document.getElementById("taskForm").reset();
+    fetchTasks();
+  };
+
+  fetchTasks();
+</script>
 </body>
 </html>

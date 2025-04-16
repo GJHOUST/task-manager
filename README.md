@@ -1,7 +1,7 @@
 # 📝 Task Manager API
 
 Jednoduché REST API pro správu úkolů (To-Do list) postavené na Spring Boot.  
-Umožňuje vytváření, čtení, aktualizaci a mazání úkolů. Součástí je Swagger dokumentace a validace vstupů.
+Umožňuje vytváření, čtení, aktualizaci a mazání úkolů. Obsahuje Swagger dokumentaci, validaci vstupních dat a podporu DTO.
 
 ---
 
@@ -9,91 +9,108 @@ Umožňuje vytváření, čtení, aktualizaci a mazání úkolů. Součástí je
 
 - ✅ Java 17
 - ✅ Spring Boot 3.4.4
-- ✅ Spring Web (REST)
-- ✅ Spring Data JPA (Hibernate)
+- ✅ Spring Web (REST API)
+- ✅ Spring Data JPA + Hibernate
 - ✅ H2 Database (in-memory)
 - ✅ Jakarta Validation (`@NotBlank`)
-- ✅ Springdoc OpenAPI 3 (Swagger UI)
 - ✅ Lombok
+- ✅ Springdoc OpenAPI 3 (Swagger UI)
 - ✅ Maven
 
 ---
 
 ## 🚀 Jak spustit projekt
 
-###  run TaskmanagerApplication
+> **IDE:** Otevři třídu `TaskmanagerApplication` a spusť ji jako Java aplikaci.
+
+> **Terminál (CLI):
+```bash
+./mvnw spring-boot:run
+```
+
+Po spuštění běží API na:  
+📍 `http://localhost:8080`
 
 ---
 
 ## 🔍 Swagger dokumentace
 
-Po spuštění aplikace otevři:
-
+Po startu otevři prohlížeč na:  
 👉 [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
 
-Zde najdeš přehled všech dostupných endpointů, můžeš si API rovnou vyzkoušet (GET, POST, PUT, DELETE) a vidíš i vstupní/výstupní JSONy.
+Získáš přehled všech dostupných endpointů, vstupních/výstupních struktur a možnost testování.
 
 ---
 
-## 🗂️ API Endpointy – konkrétní příklady
-✅ Získat všechny úkoly
+## 📀 API Endpointy – konkrétní příklady
 
-GET http://localhost:8080/api/tasks
+### ✅ Získání všech úkolů
+```http
+GET /api/tasks
+```
 
-✅ Filtrovat podle dokončenosti
+### 🔎 Filtrování podle dokončení
+```http
+GET /api/tasks?completed=true
+GET /api/tasks?completed=false
+```
 
-GET http://localhost:8080/api/tasks?completed=true
+### 📄 Získání úkolu podle ID
+```http
+GET /api/tasks/{id}
+```
 
-GET http://localhost:8080/api/tasks?completed=false
-
-✅ Získat úkol podle ID
-
-GET http://localhost:8080/api/tasks/1
-
-✅ Vytvořit nový úkol
-
-POST http://localhost:8080/api/tasks
-
----
-
-Tělo požadavku (JSON):
-
+### ➕ Vytvoření nového úkolu
+```http
+POST /api/tasks
+```
+**Tělo požadavku (JSON):**
+```json
 {
-
-"title": "auto",
-
-"description": "skoda",
-
-"completed": false
-
+  "title": "auto",
+  "description": "skoda",
+  "completed": false
 }
+```
 
----
+### 🔄 Aktualizace úkolu
+```http
+PUT /api/tasks/{id}
+```
 
-##
-✅ Aktualizovat úkol
-
-PUT http://localhost:8080/api/tasks/1
-
-✅ Smazat úkol
-
-DELETE http://localhost:8080/api/tasks/1
+### ❌ Smazání úkolu
+```http
+DELETE /api/tasks/{id}
+```
 
 ---
 
 ## 💾 H2 databáze
-Konzole databáze:
-http://localhost:8080/h2-console
 
-## Nastavení:
+Přístup do databázové konzole:  
+👉 [http://localhost:8080/h2-console](http://localhost:8080/h2-console)
 
-JDBC URL: jdbc:h2:mem:testdb
+### Přihlašovací údaje:
 
-Username: sa
-
-Password: (nech prázdné)
+- **JDBC URL:** `jdbc:h2:mem:testdb`
+- **Username:** `sa`
+- **Password:** _(nech prázdné)_
 
 ---
+---
+
+## 🔍 html stranka
+
+prohlížeč na:  
+👉 [http://localhost:8080/index.html)
 
 
- 
+
+---
+## 🔧 Testování
+
+Aplikace obsahuje základní unit testy a integrační testy controlleru pomocí `MockMvc`.  
+Testy najdeš ve složce `src/test/java`.
+
+- ✅ `TaskControllerTest` – testy REST endpointů (validace, JSON odpovědi)
+- ✅ `TaskServiceImplTest` – logika služby (CRUD operace, not found handling)

@@ -1,12 +1,15 @@
 package com.example.taskmanager.service;
 
+import com.example.taskmanager.dto.TaskRequest;
+import com.example.taskmanager.dto.TaskResponse;
+import com.example.taskmanager.exception.TaskNotFoundException;
 import com.example.taskmanager.model.Task;
 import com.example.taskmanager.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.example.taskmanager.exception.TaskNotFoundException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TaskServiceImpl implements TaskService {
@@ -15,46 +18,72 @@ public class TaskServiceImpl implements TaskService {
     private TaskRepository taskRepository;
 
     @Override
-    public List<Task> getTasksByCompleted(boolean completed) {
-        return taskRepository.findByCompleted(completed);
-    }
-
-
-    @Override
-    public List<Task> getAllTasks() {
-        return taskRepository.findAll();
-
+    public List<TaskResponse> getAllTasks() {
+        return taskRepository.findAll()
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Task getTaskById(Long id) {
-        return taskRepository.findById(id)
+    public List<TaskResponse> getTasksByCompleted(boolean completed) {
+        return taskRepository.findAll()
+                .stream()
+                .filter(task -> task.isCompleted() == completed)
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public TaskResponse getTaskById(Long id) {
+        Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new TaskNotFoundException(id));
+        return mapToResponse(task);
     }
 
     @Override
-    public Task createTask(Task task) {
-        return taskRepository.save(task);
-
+    public TaskResponse createTask(TaskRequest request) {
+        Task task = mapToEntity(request);
+        Task saved = taskRepository.save(task);
+        return mapToResponse(saved);
     }
 
     @Override
-    public Task updateTask(Long id, Task updatedTask) {
-        Task existingTask = taskRepository.findById(id)
+    public TaskResponse updateTask(Long id, TaskRequest request) {
+        Task existing = taskRepository.findById(id)
                 .orElseThrow(() -> new TaskNotFoundException(id));
 
-        existingTask.setTitle(updatedTask.getTitle());
-        existingTask.setDescription(updatedTask.getDescription());
-        existingTask.setCompleted(updatedTask.isCompleted());
+        existing.setTitle(request.getTitle());
+        existing.setDescription(request.getDescription());
+        existing.setCompleted(request.isCompleted());
 
-        return taskRepository.save(existingTask);
+        return mapToResponse(taskRepository.save(existing));
     }
 
     @Override
     public void deleteTask(Long id) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new TaskNotFoundException(id));
-
         taskRepository.delete(task);
+    }
+
+    // === Pomocné metody ===
+
+    private Task mapToEntity(TaskRequest dto) {
+        Task task = new Task();
+        task.setTitle(dto.getTitle());
+        task.setDescription(dto.getDescription());
+        task.setCompleted(dto.isCompleted());
+        return task;
+    }
+
+    private TaskResponse mapToResponse(Task task) {
+        TaskResponse dto = new TaskResponse();
+        dto.setId(task.getId());
+        dto.setTitle(task.getTitle());
+        dto.setDescription(task.getDescription());
+        dto.setCompleted(task.isCompleted());
+        dto.setCreatedAt(task.getCreatedAt());
+        return dto;
     }
 }

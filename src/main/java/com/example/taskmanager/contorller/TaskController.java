@@ -1,8 +1,8 @@
-package com.example.taskmanager.controller;
+package com.example.taskmanager.contorller;
 
-import com.example.taskmanager.dto.TaskRequest;
-import com.example.taskmanager.dto.TaskResponse;
+import com.example.taskmanager.model.Task;
 import com.example.taskmanager.service.TaskService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -16,33 +16,35 @@ public class TaskController {
     @Autowired
     private TaskService taskService;
 
-    // Získat všechny úkoly
+    @Operation(summary = "Získá všechny úkoly, volitelně lze filtrovat pomocí ?completed=true/false")
     @GetMapping
-    public List<TaskResponse> getAllTasks(@RequestParam(required = false) Boolean completed) {
-        return (completed != null)
-                ? taskService.getTasksByCompleted(completed)
-                : taskService.getAllTasks();
+    public List<Task> getTasks(@RequestParam(required = false) Boolean completed) {
+        if (completed != null) {
+            return taskService.getTasksByCompleted(completed);
+        } else {
+            return taskService.getAllTasks();
+        }
     }
 
-    // Získat úkol podle ID
+    @Operation(summary = "Získá úkol podle ID")
     @GetMapping("/{id}")
-    public TaskResponse getTaskById(@PathVariable Long id) {
+    public Task getTaskById(@PathVariable Long id) {
         return taskService.getTaskById(id);
     }
 
-    // Vytvořit nový úkol
+    @Operation(summary = "Vytvoří nový úkol")
     @PostMapping
-    public TaskResponse createTask(@Valid @RequestBody TaskRequest request) {
-        return taskService.createTask(request);
+    public Task createTask(@Valid @RequestBody Task task) {
+        return taskService.createTask(task);
     }
 
-    // Aktualizovat úkol
+    @Operation(summary = "Aktualizuje existující úkol podle ID")
     @PutMapping("/{id}")
-    public TaskResponse updateTask(@PathVariable Long id, @Valid @RequestBody TaskRequest request) {
-        return taskService.updateTask(id, request);
+    public Task updateTask(@PathVariable Long id, @Valid @RequestBody Task task) {
+        return taskService.updateTask(id, task);
     }
 
-    // Smazat úkol
+    @Operation(summary = "Smaže úkol podle ID")
     @DeleteMapping("/{id}")
     public void deleteTask(@PathVariable Long id) {
         taskService.deleteTask(id);
